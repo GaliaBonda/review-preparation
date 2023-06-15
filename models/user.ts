@@ -11,8 +11,9 @@ const UserSchema = new Schema({
     required: [true, "Username is required"],
   },
   image: {
-    type: String
-  }
+    type: String,
+  },
+  password: { type: String},
 });
 
 const User = models.User || model("User", UserSchema);

@@ -11,9 +11,12 @@ import {
 } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { SignIn } from "./SignIn";
+import { Button } from "@mui/material";
 
 const Nav = () => {
   const { data: session } = useSession();
+
+  console.log(session);
 
   const [providers, setProviders] = useState<Record<
     LiteralUnion<BuiltInProviderType, string>,
@@ -29,36 +32,18 @@ const Nav = () => {
 
   return (
     <div>
-      <div>
+      <div className="flex gap-3 py-4">
         {session?.user ? (
           <div className="flex gap-3 md:gap-5">
-            {/* <Link href='/create-prompt' className='black_btn'>
-            Create Post
-          </Link> */}
-
-            <button
-              type="button"
-              onClick={() => signOut()}
-              className="outline_btn"
-            >
+            <Button variant="contained" onClick={() => signOut()}>
               Sign Out
-            </button>
-
-            {/* <Link href='/profile'>
-            <Image
-              src={session?.user.image}
-              width={37}
-              height={37}
-              className='rounded-full'
-              alt='profile'
-            />
-          </Link> */}
+            </Button>
           </div>
         ) : (
           <>
             {providers &&
               Object.values(providers).map((provider) => (
-                <SignIn provider={provider} key={provider.name}/>
+                <SignIn provider={provider} key={provider.name} />
               ))}
           </>
         )}

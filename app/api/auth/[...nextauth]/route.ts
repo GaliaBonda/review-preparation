@@ -8,6 +8,9 @@ import { connectToDB } from "@utils/database";
 
 import User from "@models/user";
 import { Account, NextAuthOptions, Profile } from "next-auth";
+import bcrypt from "bcrypt";
+
+const saltRounds = 10;
 
 const handler: NextAuthOptions = NextAuth({
   providers: [
@@ -29,20 +32,42 @@ const handler: NextAuthOptions = NextAuth({
         email: { label: "Email", type: "email" },
       },
       async authorize(credentials) {
+        if (!credentials?.password) return false;
+
         await connectToDB();
 
         const userExist = await User.findOne({
+          email: credentials?.email,
           username: credentials?.username,
         });
-        
-        if (userExist) return userExist;
+
+        if (userExist) {
+          const match = await bcrypt.compare(
+            credentials.password,
+            userExist.password
+          );
+          if (!match) {
+            throw new Error('wrong password')
+          } else {
+            return match;
+          }
+          
+        }
+
+        //user1
+        //user1@gmail.com
+        //user1
+
         if (!userExist) {
+          const hash = await bcrypt.hash(credentials?.password, saltRounds);
+          if (!hash) return false;
+
           const user = await User.create({
             username: credentials?.username,
             email: credentials?.email,
+            password: hash,
           });
-          console.log(user)
-        if (user) return user;
+          if (user) return user;
         }
 
         return null;
@@ -67,16 +92,16 @@ const handler: NextAuthOptions = NextAuth({
 
   callbacks: {
     async session({ session }) {
+      console.log("!!!!!!!!!!!!!!!");
       try {
         const sessionUser = await User.findOne({ email: session.user?.email });
-      console.log(sessionUser)
-      if (session.user) {
-        session.user.id = sessionUser._id.toString();
-      }
+        console.log("dddddd", sessionUser);
+        if (session.user) {
+          session.user.id = sessionUser._id.toString();
+        }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-      
 
       return session;
     },
@@ -86,17 +111,14 @@ const handler: NextAuthOptions = NextAuth({
       profile?: Profile;
       credentials?: Record<string, CredentialInput>;
     }) {
-      
       const { profile, credentials } = params;
-
-      if (credentials) {
-        return false;
-      }
 
       try {
         await connectToDB();
 
         const userExist = await User.findOne({ email: profile?.email });
+
+        if (credentials) return true;
 
         if (!userExist) {
           await User.create({

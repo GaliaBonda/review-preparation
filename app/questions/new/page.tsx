@@ -90,7 +90,7 @@ const CreateQuestion = () => {
 
       <label>
         <span className="font-satoshi font-semibold text-base text-gray-700">
-          Field of Prompt{" "}
+          Field of Question{" "}
           <span className="font-normal">
             (#product, #webdevelopment, #idea, etc.)
           </span>
