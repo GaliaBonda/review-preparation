@@ -1,5 +1,10 @@
+'use client'
+
+import { ResponsiveAppBar } from "@components/CustomAppBar";
+import { Footer } from "@components/Footer";
 import Provider from "@components/Provider";
 import "@styles/globals.css";
+import "@styles/reset.css";
 import { Session } from "next-auth";
 import { FC, PropsWithChildren } from "react";
 
@@ -10,11 +15,12 @@ export const metadata = {
 
 const layout: FC<PropsWithChildren<{session: Session | undefined | null}>> = ({ children, session }) => {
   return (
-    <html lang="en">
-      <body>
+    <html className="h-screen w-screen" lang="en">
+      <body className='h-screen flex flex-col'>
         <Provider session={session}>
-          <div className="main"></div>
-          <main>{children}</main>
+          <ResponsiveAppBar/>
+          <main className="basis-full p-4 grow-1">{children}</main>
+          <Footer/>
         </Provider>
       </body>
     </html>

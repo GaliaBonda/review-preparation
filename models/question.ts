@@ -34,8 +34,8 @@ const QuestionSchema = new Schema({
     type: String,
     required: [true, "Content is required"],
   },
-  tag: {
-    type: String,
+  tags: {
+    type: [String],
     required: [true, "Tag is required."],
   },
   creator: {

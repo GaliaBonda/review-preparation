@@ -2,20 +2,22 @@
 
 import { FormEvent, useState } from "react";
 import { useSession } from "next-auth/react";
-import Link from 'next/link'
-
-enum QuestionSection {
-  TypeScript = "TypeScript",
-  JavaScript = "JavaScript",
-  HTML = "HTML",
-  CSS = "CSS",
-  React = "React",
-  API = "API",
-  OOP = "OOP",
-  SOLID = "SOLID",
-  Data_Structures_Algorithms = "Data Structures and Algorithms",
-  Git = "Git",
-}
+import Link from "next/link";
+import { BasicModal } from "@components/Modal";
+import {
+  Button,
+  FormControl,
+  Select,
+  TextField,
+  TextareaAutosize,
+  Typography,
+} from "@mui/material";
+import { useRouter } from "next/navigation";
+import { QuestionSection } from "@custom-types/question-type";
+import { CustomButton } from "@components/CustomButton";
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
 
 type NewQuestionType = {
   userId: string;
@@ -25,42 +27,47 @@ type NewQuestionType = {
 };
 
 const CreateQuestion = () => {
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
+
+  const { status, data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      setError("To proceed, please, sign in");
+      // The user is not authenticated, handle it here.
+    },
+  });
 
   console.log(session);
-  
 
   const [submitting, setIsSubmitting] = useState(false);
   const [newQuestion, setNewQuestion] = useState<
     Omit<NewQuestionType, "userId">
   >({ question: "", tag: "", section: QuestionSection.JavaScript });
+  const [error, setError] = useState<string | null>(null);
 
-  console.log(newQuestion)
+  console.log(newQuestion);
+
+  const router = useRouter();
 
   const createQuestion = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      console.log({
-        content: newQuestion.question,
-        userId: session?.user.id,
-        tag: newQuestion.tag,
-        section: newQuestion.section
-      })
+      
       const response = await fetch("/api/question/new", {
         method: "POST",
         body: JSON.stringify({
           content: newQuestion.question,
           userId: session?.user.id,
-          tag: newQuestion.tag,
-          section: newQuestion.section
+          tags: newQuestion.tag.split(',').map((item) => item.trim()),
+          section: newQuestion.section,
         }),
       });
 
       if (response.ok) {
-        // router.push("/");
-        console.log(response)
+        setNewQuestion(prev => ({ question: "", tag: "", section: prev.section }))
+        console.log(response);
       }
     } catch (error) {
       console.log(error);
@@ -70,56 +77,79 @@ const CreateQuestion = () => {
   };
 
   return (
-    <form
-      onSubmit={createQuestion}
-      className="mt-10 w-full max-w-2xl flex flex-col gap-7 glassmorphism"
-    >
-      <label>
-        <span className="font-satoshi font-semibold text-base text-gray-700">
-          Your Question
-        </span>
-
-        <textarea
+    <>
+      <form
+        onSubmit={createQuestion}
+        className="mt-10 w-full max-w-2xl flex flex-col gap-7 glassmorphism"
+      >
+        <TextField
           value={newQuestion.question}
-          onChange={(e) => setNewQuestion(prev => ({...prev, question: e.target.value}))}
+          label={`New question`}
           placeholder="Question..."
           required
-          className="border border-black"
+          onChange={(e) =>
+            setNewQuestion((prev) => ({ ...prev, question: e.target.value }))
+          }
+          minRows={3}
+          multiline
         />
-      </label>
 
-      <label>
-        <span className="font-satoshi font-semibold text-base text-gray-700">
-          Field of Question{" "}
-          <span className="font-normal">
-            (#product, #webdevelopment, #idea, etc.)
-          </span>
-        </span>
-        <input
-          value={newQuestion.tag}
-          onChange={(e) => setNewQuestion(prev => ({...prev, tag: e.target.value}))}
-          type="text"
-          placeholder="#Tag"
+        <TextField
+          label="Tag"
+          variant="outlined"
+          id="username"
           required
-          className="border border-black"
-
+          value={newQuestion.tag}
+          onChange={(e) =>
+            setNewQuestion((prev) => ({ ...prev, tag: e.target.value }))
+          }
+          placeholder="#tag"
         />
-      </label>
-
-      <div className="flex-end mx-3 mb-5 gap-4">
-        <Link href="/" className="text-gray-500 text-sm">
-          Cancel
-        </Link>
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="px-5 py-1.5 text-sm bg-primary-orange rounded-full"
+      <FormControl fullWidth>
+        <InputLabel id="demo-simple-select-label">Section</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={newQuestion.section}
+          label="Section"
+          onChange={(e) =>
+            setNewQuestion((prev) => {
+              const section = Object.values(QuestionSection).find(item => item === e.target.value)
+              if (!section) return prev;
+              return { ...prev, section }})
+          }
         >
-          {submitting ? `Creating...` : 'Create'}
-        </button>
-      </div>
-    </form>
+         {Object.values(QuestionSection).map(item => {
+          return  <MenuItem key={item} value={item}>{item}</MenuItem>
+         })} 
+        </Select>
+      </FormControl>
+        <div className="flex flex-end mx-3 mb-5 gap-4">
+          <Button onClick={() => router.push("/")} variant="outlined">Cancel</Button>
+
+          <CustomButton disabled={submitting} type="submit">
+            {submitting ? `Creating...` : "Create"}
+          </CustomButton>
+        </div>
+      </form>
+      <BasicModal
+        variant="ERROR"
+        open={!!error}
+        handleClose={() => {
+          setError(null);
+        }}
+      >
+        <Typography id="modal-modal-title" variant="h6" component="h2">
+          ERROR
+        </Typography>
+        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+          {`${error?.[0].toUpperCase()}${error?.slice(1)}`}
+        </Typography>
+        <Link href="/" className="mt-4 text-white">
+          Sign in
+        </Link>
+      </BasicModal>
+    </>
   );
 };
 

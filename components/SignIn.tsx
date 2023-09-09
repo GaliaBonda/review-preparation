@@ -1,12 +1,14 @@
 import React, { FC, useState } from "react";
 import { signIn, ClientSafeProvider } from "next-auth/react";
-import { Form } from "./Form";
-import { Button, Popover, Typography } from "@mui/material";
+import { Form } from "./SignInForm";
+import { Button, MenuItem, Popover, Typography } from "@mui/material";
 import { BasicPopover } from "./BasicPopover";
 import { BasicModal } from "./Modal";
+import { CustomButton } from "./CustomButton";
 
 type SignInProps = {
   provider: ClientSafeProvider;
+  handleCloseUserMenu?: () => void;
 };
 
 export type CredentialsType = {
@@ -15,58 +17,38 @@ export type CredentialsType = {
   email: string;
 };
 
-export const SignIn: FC<SignInProps> = ({ provider }) => {
+export const SignIn: FC<SignInProps> = ({ provider, handleCloseUserMenu }) => {
   const [credentials, setCredentials] = useState<CredentialsType>({
     username: "",
     password: "",
     email: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const [formShown, setFormShown] = useState(false);
 
   if (provider.type === "oauth")
     return (
-      <div key={provider.name}>
-        <Button
-          variant="contained"
+      <div>
+        <MenuItem
           onClick={() => {
-            signIn(provider.id);
+            signIn(provider.id, {callbackUrl: provider.id === 'github' ? '/github-callback' : undefined });
           }}
         >
           Sign in with {provider.name}
-        </Button>
+        </MenuItem>
       </div>
     );
   if (provider.type === "credentials")
     return (
       <>
-        <div className="relative" key={provider.name}>
-          {/* <Button
-          styles={`${formShown ? "rounded-t shadow-t" : "rounded shadow"}`}
-          onClick={() => setFormShown((prev) => !prev)}
+        <MenuItem
+          className="flex gap-3 md:gap-5"
+          onClick={() => {setFormShown(true); handleCloseUserMenu?.();}}
         >
-          Sign in with login and password
-        </Button> */}
-          <BasicPopover title="Sign in with login and password">
-            <Form
-              credentials={credentials}
-              setCredentials={setCredentials}
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const form = new FormData(e.target as HTMLFormElement);
+          <Typography textAlign="center">Sign in with password</Typography>
+          {/* <BasicPopover title="Sign in with password"> */}
 
-                const res = await signIn("credentials", {
-                  redirect: false,
-                  ...credentials,
-                  // username: form.get("username"),
-                  // password: form.get("password"),
-                  // email: form.get("email"),
-                });
-                if (res?.error) {
-                  setError(res.error);
-                }
-              }}
-            />
-          </BasicPopover>
+          {/* </BasicPopover> */}
           <BasicModal
             variant="ERROR"
             open={!!error}
@@ -81,7 +63,33 @@ export const SignIn: FC<SignInProps> = ({ provider }) => {
               {`${error?.[0].toUpperCase()}${error?.slice(1)}`}
             </Typography>
           </BasicModal>
-        </div>
+        </MenuItem>
+        <BasicModal
+          variant="BASIC"
+          open={formShown}
+          handleClose={() => {
+            setFormShown(false);
+          }}
+        >
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            Sign in form
+          </Typography>
+          <Form
+            credentials={credentials}
+            setCredentials={setCredentials}
+            onSubmit={async (e) => {
+              e.preventDefault();
+
+              const res = await signIn("credentials", {
+                redirect: false,
+                ...credentials,
+              });
+              if (res?.error) {
+                setError(res.error);
+              }
+            }}
+          />
+        </BasicModal>
       </>
     );
   return <></>;

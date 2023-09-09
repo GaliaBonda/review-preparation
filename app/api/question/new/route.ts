@@ -3,12 +3,12 @@ import { connectToDB } from "@utils/database";
 
 
 export const POST = async (request: Request) => {
-    const { userId, content, tag, section } = await request.json();
-    console.log(userId, content, tag, section)
+    const { userId, content, tags, section } = await request.json();
+    console.log(userId, content, tags, section)
 
     try {
         await connectToDB();
-        const newQuestion = new Question({ creator: userId, content, tag, section });
+        const newQuestion = new Question({ creator: userId, content, tags, section });
 
         await newQuestion.save();
         return new Response(JSON.stringify(newQuestion), { status: 201 })

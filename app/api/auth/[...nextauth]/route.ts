@@ -1,5 +1,6 @@
 import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider, {
   CredentialInput,
 } from "next-auth/providers/credentials";
@@ -14,6 +15,10 @@ const saltRounds = 10;
 
 const handler: NextAuthOptions = NextAuth({
   providers: [
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID ?? '',
+      clientSecret: process.env.GITHUB_SECRET ?? '',
+    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
@@ -49,7 +54,7 @@ const handler: NextAuthOptions = NextAuth({
           if (!match) {
             throw new Error('wrong password')
           } else {
-            return match;
+            return userExist;
           }
           
         }
@@ -91,13 +96,12 @@ const handler: NextAuthOptions = NextAuth({
   ],
 
   callbacks: {
-    async session({ session }) {
-      console.log("!!!!!!!!!!!!!!!");
+    async session({ session, user }) {
       try {
         const sessionUser = await User.findOne({ email: session.user?.email });
-        console.log("dddddd", sessionUser);
-        if (session.user) {
+        if (session.user && sessionUser) {
           session.user.id = sessionUser._id.toString();
+          session.user.username = sessionUser.username;
         }
       } catch (error) {
         console.log(error);
@@ -106,12 +110,18 @@ const handler: NextAuthOptions = NextAuth({
       return session;
     },
 
+    
+
     async signIn(params: {
       account: Account | null;
       profile?: Profile;
       credentials?: Record<string, CredentialInput>;
     }) {
-      const { profile, credentials } = params;
+      const { profile, credentials, account } = params;
+
+      // if (account?.provider === 'github') {
+
+      // }
 
       try {
         await connectToDB();

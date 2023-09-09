@@ -12,6 +12,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { SignIn } from "./SignIn";
 import { Button } from "@mui/material";
+import { CustomButton } from "./CustomButton";
 
 const Nav = () => {
   const { data: session } = useSession();
@@ -35,9 +36,9 @@ const Nav = () => {
       <div className="flex gap-3 py-4">
         {session?.user ? (
           <div className="flex gap-3 md:gap-5">
-            <Button variant="contained" onClick={() => signOut()}>
+            <CustomButton onClick={() => signOut()}>
               Sign Out
-            </Button>
+            </CustomButton>
           </div>
         ) : (
           <>

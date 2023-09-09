@@ -32,7 +32,7 @@ export const BasicModal: FC<PropsWithChildren<ModalProps>> = ({
       >
         <div
           className={`rounded p-4 -translate-y-1/2 -translate-x-1/2 w-1/2 flex flex-col items-center justify-center shadow-xl absolute left-1/2 top-1/2 ${
-            variant === "ERROR" ? "bg-red-500/60 text-white" : "bg-white/60"
+            variant === "ERROR" ? "bg-red-500/60 text-white" : "bg-white"
           }`}
         >
           {children}

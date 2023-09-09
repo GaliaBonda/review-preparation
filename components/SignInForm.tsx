@@ -6,6 +6,7 @@ import React, {
   SetStateAction,
 } from "react";
 import { CredentialsType } from "./SignIn";
+import { CustomButton } from "./CustomButton";
 
 type FormProps = {
   credentials: CredentialsType;
@@ -57,7 +58,7 @@ export const Form: FC<FormProps> = ({
           }
         />
       </FormControl>
-      <Button type="submit">Submit</Button>
+      <CustomButton type="submit">Submit</CustomButton>
     </form>
   );
 };
