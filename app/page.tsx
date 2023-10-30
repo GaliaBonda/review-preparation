@@ -7,7 +7,7 @@ async function getData() {
   }).then((res) => {
     return res.json();
   });
-  console.log(result);
+  // console.log(result);
   // The return value is *not* serialized
   // You can return Date, Map, Set, etc.
 

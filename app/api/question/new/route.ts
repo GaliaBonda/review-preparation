@@ -4,7 +4,7 @@ import { connectToDB } from "@utils/database";
 
 export const POST = async (request: Request) => {
     const { userId, content, tags, section } = await request.json();
-    console.log(userId, content, tags, section)
+    // console.log(userId, content, tags, section)
 
     try {
         await connectToDB();

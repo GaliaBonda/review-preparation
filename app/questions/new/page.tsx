@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BasicModal } from "@components/Modal";
@@ -15,9 +15,12 @@ import {
 import { useRouter } from "next/navigation";
 import { QuestionSection } from "@custom-types/question-type";
 import { CustomButton } from "@components/CustomButton";
-import Box from '@mui/material/Box';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
+import Box from "@mui/material/Box";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@store";
+import { add } from "@store/thunk-reducers";
 
 type NewQuestionType = {
   userId: string;
@@ -26,8 +29,22 @@ type NewQuestionType = {
   section: QuestionSection;
 };
 
+const getDown = (a: number) => {
+  return a + 1;
+};
+
+// enum Test {
+//   Up,
+//   Down = "down"
+// }
+
+// const a = Test.Up;
+// console.log(Test[a])
+
 const CreateQuestion = () => {
   // const { data: session } = useSession();
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const { status, data: session } = useSession({
     required: true,
@@ -37,7 +54,8 @@ const CreateQuestion = () => {
     },
   });
 
-  console.log(session);
+  // console.log(session);
+  // console.log(session);
 
   const [submitting, setIsSubmitting] = useState(false);
   const [newQuestion, setNewQuestion] = useState<
@@ -45,28 +63,41 @@ const CreateQuestion = () => {
   >({ question: "", tag: "", section: QuestionSection.JavaScript });
   const [error, setError] = useState<string | null>(null);
 
-  console.log(newQuestion);
+  // console.log(newQuestion);
 
   const router = useRouter();
 
   const createQuestion = async (e: FormEvent) => {
     e.preventDefault();
+    dispatch(
+      add({
+        id: "",
+        creator: session?.user.id ?? "",
+        content: newQuestion.question,
+        tags: newQuestion.tag.split(",").map((item) => item.trim()),
+        section: newQuestion.section,
+      })
+    );
+    return;
     setIsSubmitting(true);
 
     try {
-      
       const response = await fetch("/api/question/new", {
         method: "POST",
         body: JSON.stringify({
           content: newQuestion.question,
           userId: session?.user.id,
-          tags: newQuestion.tag.split(',').map((item) => item.trim()),
+          tags: newQuestion.tag.split(",").map((item) => item.trim()),
           section: newQuestion.section,
         }),
       });
 
       if (response.ok) {
-        setNewQuestion(prev => ({ question: "", tag: "", section: prev.section }))
+        setNewQuestion((prev) => ({
+          question: "",
+          tag: "",
+          section: prev.section,
+        }));
         console.log(response);
       }
     } catch (error) {
@@ -105,27 +136,36 @@ const CreateQuestion = () => {
           }
           placeholder="#tag"
         />
-      <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Section</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={newQuestion.section}
-          label="Section"
-          onChange={(e) =>
-            setNewQuestion((prev) => {
-              const section = Object.values(QuestionSection).find(item => item === e.target.value)
-              if (!section) return prev;
-              return { ...prev, section }})
-          }
-        >
-         {Object.values(QuestionSection).map(item => {
-          return  <MenuItem key={item} value={item}>{item}</MenuItem>
-         })} 
-        </Select>
-      </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">Section</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={newQuestion.section}
+            label="Section"
+            onChange={(e) =>
+              setNewQuestion((prev) => {
+                const section = Object.values(QuestionSection).find(
+                  (item) => item === e.target.value
+                );
+                if (!section) return prev;
+                return { ...prev, section };
+              })
+            }
+          >
+            {Object.values(QuestionSection).map((item) => {
+              return (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
         <div className="flex flex-end mx-3 mb-5 gap-4">
-          <Button onClick={() => router.push("/")} variant="outlined">Cancel</Button>
+          <Button onClick={() => router.push("/")} variant="outlined">
+            Cancel
+          </Button>
 
           <CustomButton disabled={submitting} type="submit">
             {submitting ? `Creating...` : "Create"}

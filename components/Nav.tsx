@@ -13,11 +13,14 @@ import React, { useEffect, useState } from "react";
 import { SignIn } from "./SignIn";
 import { Button } from "@mui/material";
 import { CustomButton } from "./CustomButton";
+import {useAppSelector} from '../store/index';
 
 const Nav = () => {
   const { data: session } = useSession();
 
-  console.log(session);
+  
+
+  // console.log(session);
 
   const [providers, setProviders] = useState<Record<
     LiteralUnion<BuiltInProviderType, string>,

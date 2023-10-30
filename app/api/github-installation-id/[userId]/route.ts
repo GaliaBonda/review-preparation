@@ -5,7 +5,7 @@ import type { NextApiRequest } from 'next'
 export const GET = async (request : NextApiRequest) => {
     try {
         await connectToDB()
-console.log(request)
+// console.log(request)
         const installationId = await GitInstallationId.findOne({userId: {$eq: request.body}})
         if (!installationId) return new Response("InstallationId Not Found", { status: 404 });
 
