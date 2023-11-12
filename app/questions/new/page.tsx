@@ -65,6 +65,8 @@ const CreateQuestion = () => {
 
   // console.log(newQuestion);
 
+  
+
   const router = useRouter();
 
   const createQuestion = async (e: FormEvent) => {

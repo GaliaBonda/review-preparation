@@ -17,3 +17,8 @@ export const POST = async (request: Request) => {
         return new Response("Failed to create a new question", { status: 500 });
     }
 }
+
+const promise = new Promise((resolve, reject) => {
+    if (Math.random() > 0.5 ) resolve(2)
+    reject(0)
+});

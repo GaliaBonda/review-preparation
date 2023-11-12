@@ -7,9 +7,9 @@ import { store } from "@store";
 
 import "@styles/globals.css";
 import "@styles/reset.css";
+import "@styles/grid.css";
 import { Session } from "next-auth";
 import { FC, PropsWithChildren } from "react";
-import Providers from "./provider";
 import { ReduxProvider } from "./redux-provider";
 
 export const metadata = {
@@ -26,9 +26,7 @@ const layout: FC<
         <ReduxProvider>
           <Provider session={session}>
           
-            <ResponsiveAppBar />
-            <main className="basis-full p-4 grow-1">{children}</main>
-            <Footer />
+            {children}
          
         </Provider> 
         </ReduxProvider>

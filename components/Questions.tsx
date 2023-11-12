@@ -37,6 +37,10 @@ export const Questions: FC<QuestionsProps> = ({ questions }) => {
   }
  }, []);
 
+ useEffect(() => {
+  sessionStorage.setItem('wuestions', 'goood')
+ }, []);
+
 const questions1 = useAppSelector(state => state.questions);
   console.log(questions1)
 
